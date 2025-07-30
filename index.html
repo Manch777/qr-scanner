@@ -2,66 +2,48 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Сканер QR</title>
+  <title>QR Scanner</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
+    body {
       font-family: sans-serif;
       text-align: center;
       background: #f8f8f8;
+      margin: 0;
+      padding: 0;
     }
     #reader {
       width: 100%;
+      margin: 0 auto;
       margin-top: 20px;
-    }
-    h2 {
-      color: #333;
-      margin-top: 16px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-top: 20px;
-      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <h2>Сканируйте QR-код</h2>
-  <button onclick="startScanner()">Начать сканирование</button>
   <div id="reader"></div>
 
   <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    const tg = window.Telegram?.WebApp;
+    tg?.expand();
 
-    let scannerStarted = false;
-
-    async function startScanner() {
-      if (scannerStarted) return;
-      scannerStarted = true;
-
-      const html5QrCode = new Html5Qrcode("reader");
-      const config = { fps: 10, qrbox: 250 };
-
-      try {
-        await html5QrCode.start(
-          { facingMode: "environment" },
-          config,
-          (decodedText, decodedResult) => {
-            tg.sendData(decodedText);
-            html5QrCode.stop(); // Остановить после сканирования
-          },
-          (errorMessage) => {
-            // можно логировать ошибки
-          }
-        );
-      } catch (err) {
-        console.error("Ошибка запуска сканера", err);
+    function onScanSuccess(decodedText, decodedResult) {
+      if (tg) {
+        tg.sendData(decodedText); // отправка в Telegram
+      } else {
+        alert("Результат: " + decodedText); // fallback
       }
+      html5QrcodeScanner.clear(); // Остановить сканер
     }
+
+    function onScanError(errorMessage) {
+      // можно скрыть
+    }
+
+    const html5QrcodeScanner = new Html5QrcodeScanner(
+      "reader", { fps: 10, qrbox: 250 }
+    );
+    html5QrcodeScanner.render(onScanSuccess, onScanError);
   </script>
 </body>
 </html>
