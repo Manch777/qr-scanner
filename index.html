@@ -23,31 +23,27 @@
   <h2>Сканируйте QR-код</h2>
   <div id="reader"></div>
 
-<script>
-  const tg = window.Telegram.WebApp;
-  tg.expand();
+  <script>
+    const tg = window.Telegram?.WebApp;
+    tg?.expand();
 
-  function startScanner() {
-    const reader = document.getElementById("reader");
-    reader.style.display = "block";
-
-    const html5QrCode = new Html5Qrcode("reader");
-    const config = { fps: 10, qrbox: 250 };
-
-    html5QrCode.start(
-      { facingMode: "environment" },
-      config,
-      qrText => {
-        console.log("QR:", qrText);
-        tg.sendData(qrText); // ✅ отправка данных в Telegram
-        html5QrCode.stop();  // остановка после успешного сканирования
-      },
-      error => {
-        // можно добавить отображение ошибки сканирования
+    function onScanSuccess(decodedText, decodedResult) {
+      if (tg) {
+        tg.sendData(decodedText); // отправка в Telegram
+      } else {
+        alert("Результат: " + decodedText); // fallback
       }
-    );
-  }
-</script>
+      html5QrcodeScanner.clear(); // Остановить сканер
+    }
 
+    function onScanError(errorMessage) {
+      // можно скрыть
+    }
+
+    const html5QrcodeScanner = new Html5QrcodeScanner(
+      "reader", { fps: 10, qrbox: 250 }
+    );
+    html5QrcodeScanner.render(onScanSuccess, onScanError);
+  </script>
 </body>
 </html>
