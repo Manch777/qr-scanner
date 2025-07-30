@@ -36,30 +36,35 @@
   <div id="reader"></div>
 
   <script>
+    console.log("📦 WebApp loaded");
+
     const tg = window.Telegram.WebApp;
-    tg.expand();
+    if (tg && tg.expand) {
+      tg.expand();
+      console.log("🟢 Telegram WebApp расширен");
+    } else {
+      console.log("🔴 Telegram WebApp API недоступен");
+    }
 
     document.getElementById("startBtn").addEventListener("click", function () {
+      console.log("➡️ Нажатие кнопки запуска");
+
       const reader = document.getElementById("reader");
       reader.style.display = "block";
 
       const html5QrCode = new Html5Qrcode("reader");
 
-      // 🔍 Проверим наличие камер
       Html5Qrcode.getCameras().then(devices => {
         if (devices && devices.length) {
-          console.log("🎥 Камеры:", devices);
+          console.log("🎥 Доступные камеры:", devices);
 
           html5QrCode.start(
             { facingMode: "environment" },
-            {
-              fps: 10,
-              qrbox: 250,
-            },
+            { fps: 10, qrbox: 250 },
             (qrText) => {
-              console.log("✅ QR:", qrText);
+              console.log("✅ QR найден:", qrText);
               tg.sendData(qrText);
-              html5QrCode.stop(); // остановить после скана
+              html5QrCode.stop();
             },
             (errorMessage) => {
               console.log("⚠️ Ошибка сканирования:", errorMessage);
@@ -67,6 +72,7 @@
           ).catch(err => {
             console.error("❌ Ошибка запуска камеры:", err);
           });
+
         } else {
           alert("❌ Камера не найдена или не разрешена.");
         }
