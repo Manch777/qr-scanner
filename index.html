@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Сканер QR</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
@@ -44,22 +45,33 @@
 
       const html5QrCode = new Html5Qrcode("reader");
 
-      html5QrCode.start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: 250,
-        },
-        (qrText) => {
-          tg.sendData(qrText);
-          html5QrCode.stop(); // Останавливаем после успешного скана
-        },
-        (errorMessage) => {
-          // Можно вывести в консоль
-          console.log("Ошибка сканирования:", errorMessage);
+      // 🔍 Проверим наличие камер
+      Html5Qrcode.getCameras().then(devices => {
+        if (devices && devices.length) {
+          console.log("🎥 Камеры:", devices);
+
+          html5QrCode.start(
+            { facingMode: "environment" },
+            {
+              fps: 10,
+              qrbox: 250,
+            },
+            (qrText) => {
+              console.log("✅ QR:", qrText);
+              tg.sendData(qrText);
+              html5QrCode.stop(); // остановить после скана
+            },
+            (errorMessage) => {
+              console.log("⚠️ Ошибка сканирования:", errorMessage);
+            }
+          ).catch(err => {
+            console.error("❌ Ошибка запуска камеры:", err);
+          });
+        } else {
+          alert("❌ Камера не найдена или не разрешена.");
         }
-      ).catch(err => {
-        console.error("Ошибка запуска камеры:", err);
+      }).catch(err => {
+        console.error("🚫 Ошибка доступа к камере:", err);
       });
     });
   </script>
