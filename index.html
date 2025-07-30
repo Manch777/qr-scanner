@@ -31,25 +31,37 @@
 </head>
 <body>
   <h2>Сканируйте QR-код</h2>
-  <button onclick="startScanner()">Начать сканирование</button>
+  <button id="startBtn">Начать сканирование</button>
   <div id="reader"></div>
 
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    function startScanner() {
+    document.getElementById("startBtn").addEventListener("click", function () {
       const reader = document.getElementById("reader");
       reader.style.display = "block";
 
-      const html5QrcodeScanner = new Html5QrcodeScanner(
-        "reader", { fps: 10, qrbox: 250 }
-      );
+      const html5QrCode = new Html5Qrcode("reader");
 
-      html5QrcodeScanner.render((qrText) => {
-        tg.sendData(qrText);
+      html5QrCode.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: 250,
+        },
+        (qrText) => {
+          tg.sendData(qrText);
+          html5QrCode.stop(); // Останавливаем после успешного скана
+        },
+        (errorMessage) => {
+          // Можно вывести в консоль
+          console.log("Ошибка сканирования:", errorMessage);
+        }
+      ).catch(err => {
+        console.error("Ошибка запуска камеры:", err);
       });
-    }
+    });
   </script>
 </body>
 </html>
