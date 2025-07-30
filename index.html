@@ -15,7 +15,6 @@
     #reader {
       width: 100%;
       margin-top: 20px;
-      display: none;
     }
     h2 {
       color: #333;
@@ -38,17 +37,30 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    function startScanner() {
-      const reader = document.getElementById("reader");
-      reader.style.display = "block";
+    let scannerStarted = false;
 
-      const html5QrcodeScanner = new Html5QrcodeScanner(
-        "reader", { fps: 10, qrbox: 250 }
-      );
+    async function startScanner() {
+      if (scannerStarted) return;
+      scannerStarted = true;
 
-      html5QrcodeScanner.render((qrText) => {
-        tg.sendData(qrText);
-      });
+      const html5QrCode = new Html5Qrcode("reader");
+      const config = { fps: 10, qrbox: 250 };
+
+      try {
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          config,
+          (decodedText, decodedResult) => {
+            tg.sendData(decodedText);
+            html5QrCode.stop(); // Остановить после сканирования
+          },
+          (errorMessage) => {
+            // можно логировать ошибки
+          }
+        );
+      } catch (err) {
+        console.error("Ошибка запуска сканера", err);
+      }
     }
   </script>
 </body>
